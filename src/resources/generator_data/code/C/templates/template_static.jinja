@@ -68,8 +68,10 @@ void wrapper_win_copy_function(R_MPI_Win oldwin, int win_keyval,
   A_MPI_Win win_tmp;
   win_conv_r2a(&win_tmp, &oldwin);
 
+  in_w = 0;
   (ptr_win_copy_fn)(win_tmp, win_keyval, extra_state, attribute_val_in,
                     attribute_val_out, flag);
+  in_w = 1;
 }
 
 
@@ -78,7 +80,9 @@ void wrapper_win_delete_function(R_MPI_Win win, int win_keyval,
   A_MPI_Win win_tmp;
   win_conv_r2a(&win_tmp, &win);
 
+  in_w = 0;
   (ptr_win_dlt_fn)(win_tmp, win_keyval, attribute_val, extra_state);
+  in_w = 1;
 }
 
 void wrapper_grequest_query_function(void *extra_state, R_MPI_Status *status) {
@@ -86,7 +90,9 @@ void wrapper_grequest_query_function(void *extra_state, R_MPI_Status *status) {
   A_MPI_Status *status_tmp = &status_ltmp;
   status_prt_conv_r2a(&status_tmp, &status);
 
+  in_w = 0;
   (ptr_grq_query_fn)(extra_state, status_tmp);
+  in_w = 1;
 }
 
 void wrapper_type_copy_attr_fn(R_MPI_Datatype oldtype, int type_keyval,
@@ -95,8 +101,10 @@ void wrapper_type_copy_attr_fn(R_MPI_Datatype oldtype, int type_keyval,
   A_MPI_Datatype datatype_tmp;
   datatype_conv_r2a(&datatype_tmp, &oldtype);
 
+  in_w = 0;
   (ptr_type_cpy_attr_fn)(datatype_tmp, type_keyval, extra_state,
                          attribute_val_in, attribute_val_out, flag);
+  in_w = 1;
 }
 
 void wrapper_type_delete_attr_fn(R_MPI_Datatype datatype, int type_keyval,
@@ -104,7 +112,9 @@ void wrapper_type_delete_attr_fn(R_MPI_Datatype datatype, int type_keyval,
   A_MPI_Datatype datatype_tmp;
   datatype_conv_r2a(&datatype_tmp, &datatype);
 
+  in_w = 0;
   (ptr_type_dlt_attr_fn)(datatype_tmp, type_keyval, attribute_val, extra_state);
+  in_w = 1;
 }
 
 void wrapper_user_function(void *invec, void *inoutvec, int *len,
@@ -112,14 +122,18 @@ void wrapper_user_function(void *invec, void *inoutvec, int *len,
   A_MPI_Datatype datatype_tmp;
   datatype_conv_r2a(&datatype_tmp, type);
 
+  in_w = 0;
   (ptr_user_func)(invec, inoutvec, len, &datatype_tmp);
+  in_w = 1;
 }
 
 static void wrapper_comm_handler_function(R_MPI_Comm *comm, int *err, ...) {
   A_MPI_Comm comm_tmp;
   comm_conv_r2a_static(&comm_tmp, comm);
 
+  in_w = 0;
   (ptr_comm_fn_handler)(&comm_tmp, err, "", NULL);
+  in_w = 1;
 }
 
 static void wrapper_handler_function(R_MPI_Comm *comm, int *err, ...) {
@@ -128,7 +142,9 @@ static void wrapper_handler_function(R_MPI_Comm *comm, int *err, ...) {
   comm_conv_r2a_static(&comm_tmp, comm);
   communicator_fn_translation_get(comm_tmp, &hf);
 
+  in_w = 0;
   hf(&comm_tmp, err, "", NULL);
+  in_w = 1;
 }
 int print(FILE *stream, const char *format, ...) {
   int ret_status = 0;
@@ -229,8 +245,10 @@ static int wrapper_copy_function(R_MPI_Comm comm, int keyval, void *extra_state,
       myKeyval_translation_get(keyval)->cp_function;
   if (*ptr_copy_func==A_MPI_NULL_COPY_FN)
     return A_MPI_SUCCESS;
+  in_w = 0;
   int res = (ptr_copy_func)(comm_tmp, keyval, extra_state, attribute_val_in,
                             attribute_val_out, flag);
+  in_w = 1;
   ptr_copy_func = NULL;
   return error_code_conv_r2a(res);
 }
@@ -243,7 +261,9 @@ static int wrapper_delete_function(R_MPI_Comm comm, int keyval,
       myKeyval_translation_get(keyval)->del_function;
   if (*ptr_delete_func==A_MPI_NULL_DELETE_FN)
     return A_MPI_SUCCESS;
+  in_w = 0;
   int res = (ptr_delete_func)(comm_tmp, keyval, attribute_val, extra_state);
+  in_w = 1;
   ptr_delete_func = NULL;
   return error_code_conv_r2a(res);
 }
@@ -255,7 +275,9 @@ int wrapper_datarep_read_conversion_fn(void * userbuf, R_MPI_Datatype datatype, 
     datatype_conv_r2a(&datatype_tmp,&datatype);
 
     A_MPI_Offset offset_tmp = (A_MPI_Offset) position;
+    in_w = 0;
     int ret_tmp = (ptr_read_conversion_fn)(userbuf, datatype_tmp, count, filebuf, offset_tmp, extra_state);
+    in_w = 1;
     return ret_tmp;
 }
 
@@ -265,7 +287,9 @@ int wrapper_datarep_write_conversion_fn(void * userbuf, R_MPI_Datatype datatype,
     A_MPI_Datatype datatype_tmp;
     datatype_conv_r2a(&datatype_tmp,&datatype);
     A_MPI_Offset offset_tmp = (A_MPI_Offset) position;
+    in_w = 0;
     int ret_tmp = (ptr_write_conversion_fn)(userbuf, datatype_tmp, count, filebuf, offset_tmp, extra_state);
+    in_w = 1;
     return ret_tmp;
 }
 
@@ -274,6 +298,8 @@ int wrapper_datarep_extent_fn(R_MPI_Datatype datatype, R_MPI_Aint *file_extent, 
     A_MPI_Datatype datatype_tmp;
     datatype_conv_r2a(&datatype_tmp,&datatype);
     A_MPI_Aint *file_extent_tmp = (A_MPI_Aint*) file_extent;
+    in_w = 0;
     int ret_tmp = (ptr_extent_fn)(datatype_tmp, file_extent_tmp, extra_state);
+    in_w = 1;
     return ret_tmp;
 }
